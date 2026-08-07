@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tracker Tadarus</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#55341b",
+              "text-main": "#1e293b",
+              "text-muted": "#64748b",
+              "border-dash": "#cbd5e1",
+            },
+          },
+        },
+      };
+    </script>
+
+    <!-- Favicon Utama (.ico) -->
+    <link rel="icon" href="public/favicon.ico" />
+
+    <!-- Favicon PNG Berbagai Ukuran -->
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="public/favicon-16x16.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="public/favicon-32x32.png"
+    />
+
+    <!-- Apple Touch Icon (untuk iOS) -->
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="public/apple-touch-icon.png"
+    />
+
+    <link rel="manifest" href="public/site.webmanifest" />
+
+    <!-- Android / PWA Icons -->
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="public/android-chrome-192x192.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="512x512"
+      href="public/android-chrome-512x512.png"
+    />
+  </head>
+  <body class="bg-white text-text-main font-sans antialiased">
+    <!-- Header Grid 2 Kolom -->
+    <header
+      class="w-full h-[120px] bg-primary text-white grid grid-cols-[2fr_1fr] overflow-hidden"
+    >
+      <div class="flex items-center justify-center relative px-3 py-2">
+        <div class="text-center">
+          <h1 class="text-lg sm:text-xl font-bold leading-tight mb-1">
+            Rekap Tadarus Al-Qur'an
+          </h1>
+          <p class="text-xs sm:text-sm opacity-90">
+            Berdasarkan Al-Qur'an Standar Kemenag RI
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center relative overflow-hidden bg-primary">
+        <div
+          class="absolute inset-0 z-[2] pointer-events-none"
+          style="
+            background: linear-gradient(
+              to right,
+              #55341b 0%,
+              rgba(85, 52, 27, 0.8) 35%,
+              transparent 100%
+            );
+          "
+        ></div>
+
+        <img
+          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSewSYR9-YSPun2V_kHyzWGT-t20Sbn3MvQ0YmD0l4-tA&s=10"
+          alt="Al-Qur'an"
+          class="w-full h-full object-cover object-[center_35%] scale-125 block mix-blend-screen opacity-85"
+        />
+      </div>
+    </header>
+
+    <!-- Konten Utama -->
+    <main class="pt-3 pb-8">
+      <div class="max-w-[700px] mx-auto px-3 sm:px-4">
+        <!-- Status Sync Indicator & Warning Box -->
+        <div class="flex justify-between items-center pb-1">
+          <div
+            id="warning-msg"
+            class="text-[11px] text-red-600 font-medium hidden"
+          >
+            ⚠️ Maksimal 604 halaman terakhir Al-Qur'an
+          </div>
+          <span
+            id="sync-status"
+            class="text-[10px] text-text-muted italic ml-auto"
+            >Menghubungkan ke Supabase...</span
+          >
+        </div>
+
+        <!-- Table Header -->
+        <div class="flex py-2 border-b border-transparent">
+          <div class="w-full flex justify-between items-center gap-2">
+            <span class="text-xs sm:text-sm font-bold text-text-muted opacity-0"
+              >Kategori</span
+            >
+
+            <div
+              class="grid grid-cols-[36px_minmax(80px,1fr)_32px_28px] sm:grid-cols-[40px_minmax(100px,1fr)_36px_32px] gap-2 text-xs sm:text-sm text-left w-[62%] sm:w-[60%] shrink-0"
+            >
+              <span class="font-bold text-primary">Hal</span>
+              <span class="font-bold text-text-main">Surah</span>
+              <span class="font-bold text-text-muted">Ayat</span>
+              <span class="font-bold text-text-muted">Juz</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rekap List -->
+        <ol class="flex flex-col" id="rekap-list">
+          <li
+            data-id="item-1"
+            class="bg-transparent border-b-[1.5px] border-dashed border-border-dash py-3.5 flex justify-between items-center gap-2"
+          >
+            <div class="flex items-start gap-1.5 flex-1 min-w-0 pr-1">
+              <span class="font-bold text-primary text-sm min-w-[16px]"
+                >1.</span
+              >
+              <span
+                class="font-semibold text-sm sm:text-base text-text-main leading-snug break-words"
+                >Mandiri</span
+              >
+            </div>
+
+            <div
+              class="grid grid-cols-[36px_minmax(80px,1fr)_32px_28px] sm:grid-cols-[40px_minmax(100px,1fr)_36px_32px] gap-2 text-xs sm:text-sm text-left w-[62%] sm:w-[60%] shrink-0 items-center"
+            >
+              <span
+                class="hlm-input text-primary font-bold cursor-pointer p-0.5 rounded transition-colors duration-200 hover:bg-[rgba(85,52,27,0.1)] focus:outline-none focus:ring-2 focus:ring-primary focus:bg-[rgba(85,52,27,0.15)] inline-block min-w-[28px]"
+                contenteditable="true"
+                inputmode="numeric"
+                >-</span
+              >
+              <span
+                class="surah-field font-semibold text-text-main leading-tight break-words"
+                >-</span
+              >
+              <span class="ayat-field text-text-muted">-</span>
+              <span class="juz-field text-text-muted">-</span>
+            </div>
+          </li>
+
+          <li
+            data-id="item-2"
+            class="bg-transparent border-b-[1.5px] border-dashed border-border-dash py-3.5 flex justify-between items-center gap-2"
+          >
+            <div class="flex items-start gap-1.5 flex-1 min-w-0 pr-1">
+              <span class="font-bold text-primary text-sm min-w-[16px]"
+                >2.</span
+              >
+              <span
+                class="font-semibold text-sm sm:text-base text-text-main leading-snug break-words"
+                >Kelas Qur'an</span
+              >
+            </div>
+
+            <div
+              class="grid grid-cols-[36px_minmax(80px,1fr)_32px_28px] sm:grid-cols-[40px_minmax(100px,1fr)_36px_32px] gap-2 text-xs sm:text-sm text-left w-[62%] sm:w-[60%] shrink-0 items-center"
+            >
+              <span
+                class="hlm-input text-primary font-bold cursor-pointer p-0.5 rounded transition-colors duration-200 hover:bg-[rgba(85,52,27,0.1)] focus:outline-none focus:ring-2 focus:ring-primary focus:bg-[rgba(85,52,27,0.15)] inline-block min-w-[28px]"
+                contenteditable="true"
+                inputmode="numeric"
+                >-</span
+              >
+              <span
+                class="surah-field font-semibold text-text-main leading-tight break-words"
+                >-</span
+              >
+              <span class="ayat-field text-text-muted">-</span>
+              <span class="juz-field text-text-muted">-</span>
+            </div>
+          </li>
+
+          <li
+            data-id="item-3"
+            class="bg-transparent border-b-[1.5px] border-dashed border-border-dash py-3.5 flex justify-between items-center gap-2"
+          >
+            <div class="flex items-start gap-1.5 flex-1 min-w-0 pr-1">
+              <span class="font-bold text-primary text-sm min-w-[16px]"
+                >3.</span
+              >
+              <span
+                class="font-semibold text-sm sm:text-base text-text-main leading-snug break-words"
+                >PR Kelas Qur'an (sampai)</span
+              >
+            </div>
+
+            <div
+              class="grid grid-cols-[36px_minmax(80px,1fr)_32px_28px] sm:grid-cols-[40px_minmax(100px,1fr)_36px_32px] gap-2 text-xs sm:text-sm text-left w-[62%] sm:w-[60%] shrink-0 items-center"
+            >
+              <span
+                class="hlm-input text-primary font-bold cursor-pointer p-0.5 rounded transition-colors duration-200 hover:bg-[rgba(85,52,27,0.1)] focus:outline-none focus:ring-2 focus:ring-primary focus:bg-[rgba(85,52,27,0.15)] inline-block min-w-[28px]"
+                contenteditable="true"
+                inputmode="numeric"
+                >-</span
+              >
+              <span
+                class="surah-field font-semibold text-text-main leading-tight break-words"
+                >-</span
+              >
+              <span class="ayat-field text-text-muted">-</span>
+              <span class="juz-field text-text-muted">-</span>
+            </div>
+          </li>
+
+          <li
+            data-id="item-4"
+            class="bg-transparent border-b-[1.5px] border-dashed border-border-dash py-3.5 flex justify-between items-center gap-2"
+          >
+            <div class="flex items-start gap-1.5 flex-1 min-w-0 pr-1">
+              <span class="font-bold text-primary text-sm min-w-[16px]"
+                >4.</span
+              >
+              <span
+                class="font-semibold text-sm sm:text-base text-text-main leading-snug break-words"
+                >Dicho</span
+              >
+            </div>
+
+            <div
+              class="grid grid-cols-[36px_minmax(80px,1fr)_32px_28px] sm:grid-cols-[40px_minmax(100px,1fr)_36px_32px] gap-2 text-xs sm:text-sm text-left w-[62%] sm:w-[60%] shrink-0 items-center"
+            >
+              <span
+                class="hlm-input text-primary font-bold cursor-pointer p-0.5 rounded transition-colors duration-200 hover:bg-[rgba(85,52,27,0.1)] focus:outline-none focus:ring-2 focus:ring-primary focus:bg-[rgba(85,52,27,0.15)] inline-block min-w-[28px]"
+                contenteditable="true"
+                inputmode="numeric"
+                >-</span
+              >
+              <span
+                class="surah-field font-semibold text-text-main leading-tight break-words"
+                >-</span
+              >
+              <span class="ayat-field text-text-muted">-</span>
+              <span class="juz-field text-text-muted">-</span>
+            </div>
+          </li>
+
+          <li
+            data-id="item-5"
+            class="bg-transparent border-b-[1.5px] border-dashed border-border-dash py-3.5 flex justify-between items-center gap-2"
+          >
+            <div class="flex items-start gap-1.5 flex-1 min-w-0 pr-1">
+              <span class="font-bold text-primary text-sm min-w-[16px]"
+                >5.</span
+              >
+              <span
+                class="font-semibold text-sm sm:text-base text-text-main leading-snug break-words"
+                >Zidan</span
+              >
+            </div>
+
+            <div
+              class="grid grid-cols-[36px_minmax(80px,1fr)_32px_28px] sm:grid-cols-[40px_minmax(100px,1fr)_36px_32px] gap-2 text-xs sm:text-sm text-left w-[62%] sm:w-[60%] shrink-0 items-center"
+            >
+              <span
+                class="hlm-input text-primary font-bold cursor-pointer p-0.5 rounded transition-colors duration-200 hover:bg-[rgba(85,52,27,0.1)] focus:outline-none focus:ring-2 focus:ring-primary focus:bg-[rgba(85,52,27,0.15)] inline-block min-w-[28px]"
+                contenteditable="true"
+                inputmode="numeric"
+                >-</span
+              >
+              <span
+                class="surah-field font-semibold text-text-main leading-tight break-words"
+                >-</span
+              >
+              <span class="ayat-field text-text-muted">-</span>
+              <span class="juz-field text-text-muted">-</span>
+            </div>
+          </li>
+
+          <li
+            data-id="item-6"
+            class="bg-transparent border-b-[1.5px] border-dashed border-border-dash py-3.5 flex justify-between items-center gap-2"
+          >
+            <div class="flex items-start gap-1.5 flex-1 min-w-0 pr-1">
+              <span class="font-bold text-primary text-sm min-w-[16px]"
+                >6.</span
+              >
+              <span
+                class="font-semibold text-sm sm:text-base text-text-main leading-snug break-words"
+                >Zafi</span
+              >
+            </div>
+
+            <div
+              class="grid grid-cols-[36px_minmax(80px,1fr)_32px_28px] sm:grid-cols-[40px_minmax(100px,1fr)_36px_32px] gap-2 text-xs sm:text-sm text-left w-[62%] sm:w-[60%] shrink-0 items-center"
+            >
+              <span
+                class="hlm-input text-primary font-bold cursor-pointer p-0.5 rounded transition-colors duration-200 hover:bg-[rgba(85,52,27,0.1)] focus:outline-none focus:ring-2 focus:ring-primary focus:bg-[rgba(85,52,27,0.15)] inline-block min-w-[28px]"
+                contenteditable="true"
+                inputmode="numeric"
+                >-</span
+              >
+              <span
+                class="surah-field font-semibold text-text-main leading-tight break-words"
+                >-</span
+              >
+              <span class="ayat-field text-text-muted">-</span>
+              <span class="juz-field text-text-muted">-</span>
+            </div>
+          </li>
+
+          <li
+            data-id="item-7"
+            class="bg-transparent border-b-[1.5px] border-dashed border-border-dash py-3.5 flex justify-between items-center gap-2"
+          >
+            <div class="flex items-start gap-1.5 flex-1 min-w-0 pr-1">
+              <span class="font-bold text-primary text-sm min-w-[16px]"
+                >7.</span
+              >
+              <span
+                class="font-semibold text-sm sm:text-base text-text-main leading-snug break-words"
+                >Aiyra</span
+              >
+            </div>
+
+            <div
+              class="grid grid-cols-[36px_minmax(80px,1fr)_32px_28px] sm:grid-cols-[40px_minmax(100px,1fr)_36px_32px] gap-2 text-xs sm:text-sm text-left w-[62%] sm:w-[60%] shrink-0 items-center"
+            >
+              <span
+                class="hlm-input text-primary font-bold cursor-pointer p-0.5 rounded transition-colors duration-200 hover:bg-[rgba(85,52,27,0.1)] focus:outline-none focus:ring-2 focus:ring-primary focus:bg-[rgba(85,52,27,0.15)] inline-block min-w-[28px]"
+                contenteditable="true"
+                inputmode="numeric"
+                >-</span
+              >
+              <span
+                class="surah-field font-semibold text-text-main leading-tight break-words"
+                >-</span
+              >
+              <span class="ayat-field text-text-muted">-</span>
+              <span class="juz-field text-text-muted">-</span>
+            </div>
+          </li>
+
+          <li
+            data-id="item-8"
+            class="bg-transparent border-b-[1.5px] border-dashed border-border-dash py-3.5 flex justify-between items-center gap-2"
+          >
+            <div class="flex items-start gap-1.5 flex-1 min-w-0 pr-1">
+              <span class="font-bold text-primary text-sm min-w-[16px]"
+                >8.</span
+              >
+              <span
+                class="font-semibold text-sm sm:text-base text-text-main leading-snug break-words"
+                >Rafi</span
+              >
+            </div>
+
+            <div
+              class="grid grid-cols-[36px_minmax(80px,1fr)_32px_28px] sm:grid-cols-[40px_minmax(100px,1fr)_36px_32px] gap-2 text-xs sm:text-sm text-left w-[62%] sm:w-[60%] shrink-0 items-center"
+            >
+              <span
+                class="hlm-input text-primary font-bold cursor-pointer p-0.5 rounded transition-colors duration-200 hover:bg-[rgba(85,52,27,0.1)] focus:outline-none focus:ring-2 focus:ring-primary focus:bg-[rgba(85,52,27,0.15)] inline-block min-w-[28px]"
+                contenteditable="true"
+                inputmode="numeric"
+                >-</span
+              >
+              <span
+                class="surah-field font-semibold text-text-main leading-tight break-words"
+                >-</span
+              >
+              <span class="ayat-field text-text-muted">-</span>
+              <span class="juz-field text-text-muted">-</span>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </main>
+
+    <!-- Script Integrasi Supabase & Google Sheets CSV -->
+    <script>
+      const SUPABASE_URL = "https://pyfbkkvtcgsmxquytrgs.supabase.co";
+      const SUPABASE_ANON_KEY =
+        "sb_publishable_6AtR_FtMhbfv0gtGLdd6IA_zzog4YZD";
+
+      const supabaseClient = supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY,
+      );
+      const CSV_URL =
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vRX7bZZUjmVqGCIJjQf1Uppb0ic1PVolF5JnXLxqcjKLOcB_e8bsIvqQPYC8fZ-U8TzEj_QOKM4MTm1/pub?gid=0&single=true&output=csv";
+
+      let quranDatabase = {};
+      let previousValue = "";
+      let debounceTimer = null;
+
+      function parseCSV(text) {
+        const lines = text.trim().split("\n");
+        const db = {};
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+          const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+          if (cols.length >= 4) {
+            const hlm = cols[0].replace(/^"|"$/g, "").trim();
+            const surah = cols[1].replace(/^"|"$/g, "").trim();
+            const ayat = cols[2].replace(/^"|"$/g, "").trim();
+            const juz = cols[3].replace(/^"|"$/g, "").trim();
+            db[hlm] = { surah, ayat, juz };
+          }
+        }
+        return db;
+      }
+
+      async function fetchSupabaseData() {
+        const statusEl = document.getElementById("sync-status");
+        statusEl.textContent = "Memuat data...";
+
+        const { data, error } = await supabaseClient
+          .from("tadarus")
+          .select("id, Hlm");
+
+        if (error) {
+          console.error("Gagal mengambil data dari Supabase:", error);
+          statusEl.textContent = "Gagal terhubung ke database";
+          return;
+        }
+
+        if (data) {
+          data.forEach((row) => {
+            const li = document.querySelector(`li[data-id="${row.id}"]`);
+            if (li) {
+              const hlmEl = li.querySelector(".hlm-input");
+              if (hlmEl && document.activeElement !== hlmEl) {
+                hlmEl.textContent = row.Hlm ?? "-";
+                updateRowData(li);
+              }
+            }
+          });
+          statusEl.textContent = "Terhubung secara real-time";
+        }
+      }
+
+      async function saveToSupabase(id, hlmValue) {
+        const statusEl = document.getElementById("sync-status");
+        statusEl.textContent = "Menyimpan...";
+
+        const { error } = await supabaseClient
+          .from("tadarus")
+          .upsert({ id: id, Hlm: hlmValue, updated_at: new Date() });
+
+        if (error) {
+          console.error("Gagal menyimpan ke Supabase:", error);
+          statusEl.textContent = "Gagal menyimpan!";
+        } else {
+          statusEl.textContent = "Tersimpan otomatis";
+        }
+      }
+
+      function setupRealtimeListener() {
+        supabaseClient
+          .channel("public:tadarus")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "tadarus" },
+            (payload) => {
+              const updatedRow = payload.new;
+              if (updatedRow && updatedRow.id) {
+                const li = document.querySelector(
+                  `li[data-id="${updatedRow.id}"]`,
+                );
+                if (li) {
+                  const hlmEl = li.querySelector(".hlm-input");
+                  if (hlmEl && document.activeElement !== hlmEl) {
+                    hlmEl.textContent = updatedRow.Hlm ?? "-";
+                    updateRowData(li);
+                  }
+                }
+              }
+            },
+          )
+          .subscribe();
+      }
+
+      async function initData() {
+        try {
+          const response = await fetch(CSV_URL);
+          const csvText = await response.text();
+          quranDatabase = parseCSV(csvText);
+        } catch (err) {
+          console.error("Gagal mengambil data Al-Qur'an:", err);
+        }
+
+        await fetchSupabaseData();
+
+        document.querySelectorAll("#rekap-list li").forEach((row) => {
+          updateRowData(row);
+        });
+
+        setupRealtimeListener();
+      }
+
+      function updateRowData(row) {
+        const hlmEl = row.querySelector(".hlm-input");
+        const surahEl = row.querySelector(".surah-field");
+        const ayatEl = row.querySelector(".ayat-field");
+        const juzEl = row.querySelector(".juz-field");
+
+        if (!hlmEl) return;
+
+        const hlm = hlmEl.textContent.trim();
+        const data = quranDatabase[hlm];
+
+        if (data) {
+          surahEl.textContent = data.surah;
+          ayatEl.textContent = data.ayat;
+          juzEl.textContent = data.juz;
+        } else {
+          surahEl.textContent = "-";
+          ayatEl.textContent = "-";
+          juzEl.textContent = "-";
+        }
+      }
+
+      const rekapList = document.getElementById("rekap-list");
+      const warningMsg = document.getElementById("warning-msg");
+
+      rekapList.addEventListener("focusin", (e) => {
+        if (e.target.classList.contains("hlm-input")) {
+          previousValue = e.target.textContent.trim();
+          e.target.textContent = "";
+          warningMsg.classList.add("hidden");
+        }
+      });
+
+      rekapList.addEventListener("focusout", (e) => {
+        if (e.target.classList.contains("hlm-input")) {
+          const currentVal = e.target.textContent.trim();
+          if (currentVal === "") {
+            e.target.textContent = previousValue;
+            const row = e.target.closest("li");
+            updateRowData(row);
+          }
+          warningMsg.classList.add("hidden");
+        }
+      });
+
+      rekapList.addEventListener("input", (e) => {
+        if (e.target.classList.contains("hlm-input")) {
+          let hlmVal = e.target.textContent.replace(/\D/g, "").trim();
+
+          // Cek apakah melebihi 604
+          if (hlmVal !== "" && parseInt(hlmVal, 10) > 604) {
+            warningMsg.classList.remove("hidden");
+            hlmVal = "604"; // Batasi otomatis ke 604
+            e.target.textContent = hlmVal;
+
+            // Pindahkan kursor ke akhir teks HANYA saat dibatasi ke 604
+            const range = document.createRange();
+            const sel = window.getSelection();
+            range.selectNodeContents(e.target);
+            range.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(range);
+          } else {
+            warningMsg.classList.add("hidden");
+          }
+
+          const row = e.target.closest("li");
+          const id = row.getAttribute("data-id");
+
+          updateRowData(row);
+
+          clearTimeout(debounceTimer);
+          debounceTimer = setTimeout(() => {
+            if (hlmVal !== "") {
+              saveToSupabase(id, hlmVal);
+            }
+          }, 500);
+        }
+      });
+
+      rekapList.addEventListener("keydown", (e) => {
+        if (e.target.classList.contains("hlm-input") && e.key === "Enter") {
+          e.preventDefault();
+          e.target.blur();
+        }
+      });
+
+      initData();
+    </script>
+  </body>
+</html>
